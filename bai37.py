@@ -1,65 +1,87 @@
 import tkinter as tk
 from tkinter import messagebox
 
-def tim_m():
-    try:
-        n = int(entry_n.get())
+# --- HÀM XỬ LÝ LOGIC ---
 
-        if n <= 0:
-            messagebox.showerror("Lỗi", "n phải > 0")
-            return
+def nen_run_length(s):
+    """Hàm nén chuỗi theo thuật toán Run-length"""
+    if not s: return ""
+    res = ""
+    i = 0
+    while i < len(s):
+        count = 1
+        # Đếm số lượng ký tự giống nhau liên tiếp
+        while i + 1 < len(s) and s[i] == s[i+1]:
+            count += 1
+            i += 1
+        
+        # Nếu count > 1 thì thêm số lượng trước ký tự (VD: 3a)
+        # Nếu count = 1 thì chỉ thêm ký tự đó (VD: b)
+        if count > 1:
+            res += str(count) + s[i]
+        else:
+            res += s[i]
+        i += 1
+    return res
 
-        tong = 0
-        m = 0
+def giai_nen_run_length(s):
+    """Hàm giải nén chuỗi"""
+    res = ""
+    i = 0
+    while i < len(s):
+        if s[i].isdigit():
+            # Nếu là số, ta cần lấy toàn bộ các chữ số liên tiếp (VD: '12')
+            num_str = ""
+            while i < len(s) and s[i].isdigit():
+                num_str += s[i]
+                i += 1
+            # Sau số lượng chắc chắn là ký tự cần lặp
+            res += s[i] * int(num_str)
+        else:
+            # Nếu không phải số, ký tự đó xuất hiện 1 lần
+            res += s[i]
+        i += 1
+    return res
 
-        while tong + (m + 1) < n:
-            m += 1
-            tong += m
+# --- HÀM XỬ LÝ GIAO DIỆN ---
 
-        label_kq.config(
-            text=f"m lớn nhất = {m}",
-            fg="blue"
-        )
+def thuc_hien_nen():
+    input_str = entry_input.get()
+    # Kiểm tra xem chuỗi có chứa số không (theo đề bài)
+    if any(char.isdigit() for char in input_str):
+        messagebox.showwarning("Cảnh báo", "Chuỗi gốc không được chứa ký tự số!")
+        return
+    
+    encoded = nen_run_length(input_str)
+    # Tính toán tỷ lệ nén
+    ratio = (len(encoded) / len(input_str)) * 100 if len(input_str) > 0 else 0
+    
+    label_nen.config(text=f"Nén: {encoded} [{ratio:.1f}%]")
+    label_giai_nen.config(text=f"Giải nén: {giai_nen_run_length(encoded)}")
 
-    except:
-        messagebox.showerror("Lỗi", "Nhập số nguyên hợp lệ!")
+# --- THIẾT LẬP MÀN HÌNH ĐỒ HỌA ---
 
-# ===== Giao diện =====
 root = tk.Tk()
-root.title("Tìm m lớn nhất")
-root.geometry("350x250")
-root.configure(bg="#eef7ff")
+root.title("Chương trình Nén Run-length")
+root.geometry("600x300")
 
-# Tiêu đề
-tk.Label(root,
-         text="TÌM m LỚN NHẤT",
-         font=("Arial", 14, "bold"),
-         fg="darkred",
-         bg="#eef7ff").pack(pady=10)
+# Thành phần nhập liệu
+tk.Label(root, text="Nhập chuỗi gốc:", font=("Arial", 11)).pack(pady=10)
+entry_input = tk.Entry(root, width=60, font=("Courier", 10))
+entry_input.pack(pady=5)
 
-# Nhập n
-tk.Label(root,
-         text="Nhập số n:",
-         fg="green",
-         bg="#eef7ff").pack()
+# Nút bấm thực hiện
+btn_run = tk.Button(root, text="Thực hiện Nén & Giải nén", command=thuc_hien_nen, bg="#4CAF50", fg="white")
+btn_run.pack(pady=15)
 
-entry_n = tk.Entry(root, font=("Arial", 11))
-entry_n.pack(pady=5)
+# Vùng hiển thị kết quả (giả lập màn hình console trong ảnh)
+frame_result = tk.Frame(root, bg="#d3d3d3", padx=10, pady=10)
+frame_result.pack(fill="both", expand=True, padx=20, pady=10)
 
-# Nút bấm
-tk.Button(root,
-          text="Tính",
-          bg="orange",
-          fg="white",
-          font=("Arial", 10, "bold"),
-          command=tim_m).pack(pady=10)
+label_nen = tk.Label(frame_result, text="Nen: ", bg="#d3d3d3", font=("Courier", 10), anchor="w", justify="left")
+label_nen.pack(fill="x")
 
-# Kết quả
-label_kq = tk.Label(root,
-                    text="Kết quả:",
-                    font=("Arial", 12, "bold"),
-                    fg="purple",
-                    bg="#eef7ff")
-label_kq.pack()
+label_giai_nen = tk.Label(frame_result, text="Giai nen: ", bg="#d3d3d3", font=("Courier", 10), anchor="w", justify="left")
+label_giai_nen.pack(fill="x")
 
 root.mainloop()
